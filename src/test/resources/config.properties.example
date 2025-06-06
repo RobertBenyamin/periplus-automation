@@ -1,0 +1,5 @@
+base.url=https://www.periplus.com/
+test.email=user@gmail.com
+test.password=password123
+search.keyword=Naruto
+browser.timeout=15
