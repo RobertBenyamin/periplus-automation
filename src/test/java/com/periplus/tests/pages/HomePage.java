@@ -6,18 +6,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class HomePage {
-    private WebDriver driver;
-    private WebDriverWait wait;
-    
-    // Locators
+public class HomePage extends BasePage {
     private By searchBox = By.name("filter_name");
     private By loginLinkByText = By.xpath("//a[contains(text(),'Sign In')]");
     private By cartCounter = By.id("cart_total");
     
     public HomePage(WebDriver driver, WebDriverWait wait) {
-        this.driver = driver;
-        this.wait = wait;
+        super(driver, wait);
     }
     
     public void navigateToLoginPage() {

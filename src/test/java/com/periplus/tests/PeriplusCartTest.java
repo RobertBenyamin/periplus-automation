@@ -46,10 +46,11 @@ public class PeriplusCartTest extends BaseTest {
             // Step 1: Navigate to website
             logger.info("Step 1: Navigating to {}", baseUrl);
             driver.get(baseUrl);
-            Thread.sleep(2000);
             
             // Initialize page objects
             HomePage homePage = new HomePage(driver, wait);
+            homePage.waitForPageLoad();
+
             LoginPage loginPage = new LoginPage(driver, wait);
             SearchResultsPage searchPage = new SearchResultsPage(driver, wait);
             ProductDetailPage productDetailPage = new ProductDetailPage(driver, wait);
@@ -57,16 +58,16 @@ public class PeriplusCartTest extends BaseTest {
             // Step 2: Navigate to login page
             logger.info("Step 2: Navigating to login page");
             homePage.navigateToLoginPage();
+            loginPage.waitForPageLoad();
             
             // Step 3: Login
             logger.info("Step 3: Logging in with test credentials");
             loginPage.login(testEmail, testPassword);
-            Thread.sleep(2000);
             
             // Step 4: Search for product
             logger.info("Step 4: Searching for: {}", searchKeyword);
             homePage.searchProduct(searchKeyword);
-            Thread.sleep(2000);
+            searchPage.waitForPageLoad();
             
             // Get initial cart count
             int initialCartCount = homePage.getCartItemCount();
@@ -77,20 +78,17 @@ public class PeriplusCartTest extends BaseTest {
             String productName = searchPage.getFirstProductName();
             logger.info("Product to view: {}", productName);
             searchPage.clickFirstProduct();
-            Thread.sleep(2000);
+            productDetailPage.waitForPageLoad();
             
             // Step 6: Add product to cart from detail page
             logger.info("Step 6: Adding product to cart from detail page");
             productDetailPage.addToCart();
             
-            // Wait for cart to update
-            Thread.sleep(3000);
-            
             // Step 7: Navigate back to home to verify cart count
             logger.info("Step 7: Navigating back to verify cart count");
             driver.get(baseUrl);
-            Thread.sleep(2000);
-            
+            homePage.waitForPageLoad();
+
             // Step 8: Verify cart count increased
             logger.info("Step 8: Verifying product was added to cart");
             int newCartCount = homePage.getCartItemCount();
