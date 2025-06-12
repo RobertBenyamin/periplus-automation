@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.NoSuchElementException;
 import java.util.List;
 
 public class SearchResultsPage extends BasePage {
@@ -16,17 +17,23 @@ public class SearchResultsPage extends BasePage {
     }
     
     public void clickFirstProduct() {
-        // Wait for products to load
-        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(productItems));
-        
-        // Find and click first product link
-        List<WebElement> productLinks = driver.findElements(productLink);
-        if (!productLinks.isEmpty()) {
+        try {
+            // Wait for products to load
+            wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(productItems));
+            
+            // Find and click first product link
+            List<WebElement> productLinks = driver.findElements(productLink);
+            if (productLinks.isEmpty()) {
+                throw new NoSuchElementException("No products found on search results page");
+            }
+            
             WebElement firstProductLink = productLinks.get(0);
             wait.until(ExpectedConditions.elementToBeClickable(firstProductLink));
             firstProductLink.click();
-        } else {
-            throw new RuntimeException("No products found on search results page");
+        } catch (NoSuchElementException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to click on first product: " + e.getMessage(), e);
         }
     }
 }

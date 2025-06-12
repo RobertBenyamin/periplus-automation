@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.NoSuchElementException;
 
 public class ProductDetailPage extends BasePage {
     private By addToCartButton = By.xpath("//button[@class='btn btn-add-to-cart']");
@@ -29,8 +30,10 @@ public class ProductDetailPage extends BasePage {
                 ExpectedConditions.presenceOfElementLocated(productTitle)
             );
             return title.getText();
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Product title element not found on the page", e);
         } catch (Exception e) {
-            return "";
+            throw new RuntimeException("Failed to get product title", e);
         }
     }
     
@@ -40,8 +43,10 @@ public class ProductDetailPage extends BasePage {
                 ExpectedConditions.presenceOfElementLocated(productPrice)
             );
             return price.getText().trim();
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Product price element not found on the page", e);
         } catch (Exception e) {
-            return "";
+            throw new RuntimeException("Failed to get product price", e);
         }
     }
 
@@ -49,19 +54,22 @@ public class ProductDetailPage extends BasePage {
         try {
             String currentUrl = driver.getCurrentUrl();
             String productIdFromUrl = extractProductIdFromUrl(currentUrl);
-            if (!productIdFromUrl.isEmpty()) {
-                return productIdFromUrl;
+            if (productIdFromUrl.isEmpty()) {
+                throw new RuntimeException("Could not extract product ID from URL: " + currentUrl);
             }
-            
-            return "";
+            return productIdFromUrl;
         } catch (Exception e) {
-            return "";
+            throw new RuntimeException("Failed to get product ID from current page URL", e);
         }
     }
 
     private String extractProductIdFromUrl(String productUrl) {
         try {
-            if (productUrl != null && productUrl.contains("/p/")) {
+            if (productUrl == null) {
+                throw new IllegalArgumentException("Product URL cannot be null");
+            }
+            
+            if (productUrl.contains("/p/")) {
                 String[] parts = productUrl.split("/p/");
                 if (parts.length > 1) {
                     String afterP = parts[1];
@@ -73,7 +81,7 @@ public class ProductDetailPage extends BasePage {
             }
             return "";
         } catch (Exception e) {
-            return "";
+            throw new RuntimeException("Failed to extract product ID from URL: " + productUrl, e);
         }
     }
 }

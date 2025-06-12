@@ -17,6 +17,10 @@ public abstract class BasePage {
     }
     
     public void waitForPageLoad() {
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(preloader));
+        try {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(preloader));
+        } catch (Exception e) {
+            throw new RuntimeException("Error waiting for page to load: " + e.getMessage(), e);
+        }
     }
 }

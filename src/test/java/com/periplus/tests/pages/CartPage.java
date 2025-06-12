@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.NoSuchElementException;
 import java.util.List;
 
 public class CartPage extends BasePage {
@@ -17,6 +18,10 @@ public class CartPage extends BasePage {
     }
 
     public String extractProductIdFromUrl(String productUrl) {
+        if (productUrl == null || productUrl.isEmpty()) {
+            throw new IllegalArgumentException("Product URL cannot be null or empty");
+        }
+        
         try {
             if (productUrl.contains("/p/")) {
                 String[] parts = productUrl.split("/p/");
@@ -30,72 +35,103 @@ public class CartPage extends BasePage {
             }
             return "";
         } catch (Exception e) {
-            return "";
+            throw new RuntimeException("Failed to extract product ID from URL: " + productUrl, e);
         }
     }
 
     public boolean isProductInCart(String productId) {
+        if (productId == null || productId.isEmpty()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+        
         try {
             WebElement productRow = getProductRowByProductId(productId);
             return productRow != null;
         } catch (Exception e) {
-            return false;
+            throw new RuntimeException("Error checking if product " + productId + " is in cart", e);
         }
     }
 
     public String getProductTitle(String productId) {
+        if (productId == null || productId.isEmpty()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+        
         try {
             WebElement productRow = getProductRowByProductId(productId);
-            if (productRow != null) {
-                WebElement titleElement = productRow.findElement(
-                    By.xpath(".//p[@class='product-name limit-lines']//a")
-                );
-                return titleElement.getText().trim();
+            if (productRow == null) {
+                throw new NoSuchElementException("Product with ID " + productId + " not found in cart");
             }
-            return "";
+            
+            WebElement titleElement = productRow.findElement(
+                By.xpath(".//p[@class='product-name limit-lines']//a")
+            );
+            return titleElement.getText().trim();
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Could not find title element for product " + productId, e);
         } catch (Exception e) {
-            return "";
+            throw new RuntimeException("Error retrieving product title for product " + productId, e);
         }
     }
 
     public String getProductPrice(String productId) {
+        if (productId == null || productId.isEmpty()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+        
         try {
             WebElement productRow = getProductRowByProductId(productId);
-            if (productRow != null) {
-                List<WebElement> priceElements = productRow.findElements(
-                    By.xpath(".//div[@class='row'][contains(text(),'Rp')]")
-                );
-                if (!priceElements.isEmpty()) {
-                    String priceText = priceElements.get(0).getText().trim();
-                    // Extract the price
-                    if (priceText.contains("or")) {
-                        return priceText.split("or")[0].trim();
-                    }
-                    return priceText;
-                }
+            if (productRow == null) {
+                throw new NoSuchElementException("Product with ID " + productId + " not found in cart");
             }
-            return "";
+            
+            List<WebElement> priceElements = productRow.findElements(
+                By.xpath(".//div[@class='row'][contains(text(),'Rp')]")
+            );
+            if (priceElements.isEmpty()) {
+                throw new NoSuchElementException("Price element not found for product " + productId);
+            }
+            
+            String priceText = priceElements.get(0).getText().trim();
+            // Extract the price
+            if (priceText.contains("or")) {
+                return priceText.split("or")[0].trim();
+            }
+            return priceText;
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Could not find price element for product " + productId, e);
         } catch (Exception e) {
-            return "";
+            throw new RuntimeException("Error retrieving product price for product " + productId, e);
         }
     }
 
     public String getProductQuantity(String productId) {
+        if (productId == null || productId.isEmpty()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+        
         try {
             WebElement productRow = getProductRowByProductId(productId);
-            if (productRow != null) {
-                WebElement quantityInput = productRow.findElement(
-                    By.xpath(".//input[@class='input-number text-center']")
-                );
-                return quantityInput.getAttribute("value");
+            if (productRow == null) {
+                throw new NoSuchElementException("Product with ID " + productId + " not found in cart");
             }
-            return "0";
+            
+            WebElement quantityInput = productRow.findElement(
+                By.xpath(".//input[@class='input-number text-center']")
+            );
+            return quantityInput.getAttribute("value");
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Could not find quantity element for product " + productId, e);
         } catch (Exception e) {
-            return "0";
+            throw new RuntimeException("Error retrieving product quantity for product " + productId, e);
         }
     }
 
     private WebElement getProductRowByProductId(String productId) {
+        if (productId == null || productId.isEmpty()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+        
         try {
             List<WebElement> productRows = driver.findElements(cartProductRows);
             
@@ -117,7 +153,7 @@ public class CartPage extends BasePage {
             }
             return null;
         } catch (Exception e) {
-            return null;
+            throw new RuntimeException("Error finding product row for product " + productId, e);
         }
     }
     
@@ -127,8 +163,10 @@ public class CartPage extends BasePage {
                 ExpectedConditions.presenceOfElementLocated(subTotal)
             );
             return total.getText().trim();
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Subtotal element not found on the page", e);
         } catch (Exception e) {
-            return "";
+            throw new RuntimeException("Error retrieving subtotal", e);
         }
     }
 }

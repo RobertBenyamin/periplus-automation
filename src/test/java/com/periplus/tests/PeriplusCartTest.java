@@ -11,6 +11,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -27,15 +28,47 @@ public class PeriplusCartTest extends BaseTest {
     @BeforeClass
     public void loadConfiguration() {
         config = new Properties();
+        FileInputStream fileInput = null;
+        
         try {
-            config.load(new FileInputStream("src/test/resources/config.properties"));
+            fileInput = new FileInputStream("src/test/resources/config.properties");
+            config.load(fileInput);
+            
             baseUrl = config.getProperty("base.url");
+            if (baseUrl == null || baseUrl.isEmpty()) {
+                throw new RuntimeException("base.url property is missing or empty in config.properties");
+            }
+            
             testEmail = config.getProperty("test.email");
+            if (testEmail == null || testEmail.isEmpty()) {
+                throw new RuntimeException("test.email property is missing or empty in config.properties");
+            }
+            
             testPassword = config.getProperty("test.password");
+            if (testPassword == null || testPassword.isEmpty()) {
+                throw new RuntimeException("test.password property is missing or empty in config.properties");
+            }
+            
             searchKeyword = config.getProperty("search.keyword");
+            if (searchKeyword == null || searchKeyword.isEmpty()) {
+                throw new RuntimeException("search.keyword property is missing or empty in config.properties");
+            }
+            
             logger.info("Configuration loaded successfully");
+        } catch (FileNotFoundException e) {
+            logger.error("Config file not found: {}", e.getMessage());
+            throw new RuntimeException("Failed to find config.properties file", e);
         } catch (IOException e) {
-            logger.error("Failed to load configuration: {}", e.getMessage());
+            logger.error("Error reading config file: {}", e.getMessage());
+            throw new RuntimeException("Failed to load configuration from config.properties", e);
+        } finally {
+            if (fileInput != null) {
+                try {
+                    fileInput.close();
+                } catch (IOException e) {
+                    logger.warn("Failed to close config file input stream: {}", e.getMessage());
+                }
+            }
         }
     }
     
@@ -103,8 +136,8 @@ public class PeriplusCartTest extends BaseTest {
             
             logger.info("Cart verification - Product found: {}, Title: {}, Price: {}, Quantity: {}, Subtotal: {}", 
                     productInCart, 
-                    expectedProductTitle,
-                    expectedProductPrice,
+                    actualProductTitle,
+                    actualProductPrice,
                     actualQuantity, 
                     actualSubTotal);
             
