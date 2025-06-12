@@ -33,7 +33,10 @@ public class LoginPage extends BasePage {
         passwordElement.sendKeys(password);
         
         // Click sign in
-        driver.findElement(signInButton).click();
+        WebElement signInBtn = wait.until(
+            ExpectedConditions.elementToBeClickable(signInButton)
+        );
+        signInBtn.click();
         
         // Wait for login to complete
         wait.until(ExpectedConditions.presenceOfElementLocated(personalInfoHeader));
