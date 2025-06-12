@@ -4,6 +4,7 @@ import com.periplus.tests.pages.HomePage;
 import com.periplus.tests.pages.LoginPage;
 import com.periplus.tests.pages.ProductDetailPage;
 import com.periplus.tests.pages.SearchResultsPage;
+import com.periplus.tests.pages.CartPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -54,6 +55,7 @@ public class PeriplusCartTest extends BaseTest {
             LoginPage loginPage = new LoginPage(driver, wait);
             SearchResultsPage searchPage = new SearchResultsPage(driver, wait);
             ProductDetailPage productDetailPage = new ProductDetailPage(driver, wait);
+            CartPage cartPage = new CartPage(driver, wait);
             
             // Step 2: Navigate to login page
             logger.info("Step 2: Navigating to login page");
@@ -69,38 +71,54 @@ public class PeriplusCartTest extends BaseTest {
             homePage.searchProduct(searchKeyword);
             searchPage.waitForPageLoad();
             
-            // Get initial cart count
-            int initialCartCount = homePage.getCartItemCount();
-            logger.info("Initial cart count: {}", initialCartCount);
-            
             // Step 5: Click on first product to go to detail page
             logger.info("Step 5: Clicking on first product");
-            String productName = searchPage.getFirstProductName();
-            logger.info("Product to view: {}", productName);
             searchPage.clickFirstProduct();
             productDetailPage.waitForPageLoad();
             
-            // Step 6: Add product to cart from detail page
-            logger.info("Step 6: Adding product to cart from detail page");
+            // Step 6: Save product details from product detail page
+            logger.info("Step 6: Saving product details from product detail page");
+            String expectedProductId = productDetailPage.getProductId();
+            String expectedProductTitle = productDetailPage.getProductTitle();
+            String expectedProductPrice = productDetailPage.getProductPrice();
+            
+            logger.info("ID: {}, Title: {}, Price: {}", 
+                   expectedProductId, expectedProductTitle, expectedProductPrice);
+            
+            // Step 7: Add product to cart
+            logger.info("Step 7: Adding product to cart");
             productDetailPage.addToCart();
             
-            // Step 7: Navigate back to home to verify cart count
-            logger.info("Step 7: Navigating back to verify cart count");
-            driver.get(baseUrl);
-            homePage.waitForPageLoad();
-
-            // Step 8: Verify cart count increased
-            logger.info("Step 8: Verifying product was added to cart");
-            int newCartCount = homePage.getCartItemCount();
-            logger.info("New cart count: {}", newCartCount);
+            // Step 8: Navigate to cart page
+            logger.info("Step 8: Navigating to cart page");
+            driver.get(baseUrl + "/checkout/cart");
+            cartPage.waitForPageLoad();
             
-            Assert.assertTrue(newCartCount > initialCartCount, 
-                "Cart count should increase after adding product");
+            // Step 9: Verify product exists in cart
+            boolean productInCart = cartPage.isProductInCart(expectedProductId);
+            String actualProductTitle = cartPage.getProductTitle(expectedProductId);
+            String actualProductPrice = cartPage.getProductPrice(expectedProductId);
+            String actualQuantity = cartPage.getProductQuantity(expectedProductId);
+            String actualSubTotal = cartPage.getSubTotal();
             
-            logger.info("✓ Test PASSED: Product successfully added to cart!");
+            logger.info("Cart verification - Product found: {}, Title: {}, Price: {}, Quantity: {}, Subtotal: {}", 
+                    productInCart, 
+                    expectedProductTitle,
+                    expectedProductPrice,
+                    actualQuantity, 
+                    actualSubTotal);
+            
+            // Assertions
+            Assert.assertTrue(productInCart, "Product with ID " + expectedProductId + " should be present in cart");
+            Assert.assertEquals(actualProductTitle, expectedProductTitle, "Product title mismatch");
+            Assert.assertEquals(actualProductPrice, expectedProductPrice, "Product price mismatch");
+            Assert.assertEquals(actualQuantity, "1", "Product quantity should be 1");
+            Assert.assertEquals(actualSubTotal, expectedProductPrice, "Subtotal should match product price");
+        
+            logger.info("Test PASSED: Product successfully added to cart with correct details!");
             
         } catch (Exception e) {
-            logger.error("✗ Test FAILED: {}", e.getMessage(), e);
+            logger.error("Test FAILED: {}", e.getMessage(), e);
             Assert.fail("Test failed due to exception: " + e.getMessage());
         }
     }
