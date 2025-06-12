@@ -9,7 +9,6 @@ import java.util.List;
 
 public class SearchResultsPage extends BasePage {
     private By productItems = By.xpath("//div[@class='single-product']");
-    private By productName = By.xpath("//div[@class='product-content product-contents']//h3//a");
     private By productLink = By.xpath("//div[@class='product-content product-contents']//h3//a");
 
     public SearchResultsPage(WebDriver driver, WebDriverWait wait) {
@@ -29,13 +28,5 @@ public class SearchResultsPage extends BasePage {
         } else {
             throw new RuntimeException("No products found on search results page");
         }
-    }
-    
-    public String getFirstProductName() {
-        List<WebElement> products = driver.findElements(productName);
-        if (!products.isEmpty()) {
-            return products.get(0).getText();
-        }
-        return "";
     }
 }
