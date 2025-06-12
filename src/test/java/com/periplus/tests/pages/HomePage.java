@@ -9,7 +9,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class HomePage extends BasePage {
     private By searchBox = By.name("filter_name");
     private By loginLinkByText = By.xpath("//a[contains(text(),'Sign In')]");
-    private By cartCounter = By.id("cart_total");
     
     public HomePage(WebDriver driver, WebDriverWait wait) {
         super(driver, wait);
@@ -29,16 +28,5 @@ public class HomePage extends BasePage {
         search.clear();
         search.sendKeys(productName);
         search.submit();
-    }
-    
-    public int getCartItemCount() {
-        try {
-            WebElement counter = wait.until(
-                ExpectedConditions.presenceOfElementLocated(cartCounter)
-            );
-            return Integer.parseInt(counter.getText());
-        } catch (Exception e) {
-            return 0;
-        }
     }
 }
