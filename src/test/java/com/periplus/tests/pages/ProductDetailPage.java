@@ -6,6 +6,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.NoSuchElementException;
+import com.periplus.tests.utils.UrlUtils;
 
 public class ProductDetailPage extends BasePage {
     private By addToCartButton = By.xpath("//button[@class='btn btn-add-to-cart']");
@@ -53,35 +54,13 @@ public class ProductDetailPage extends BasePage {
     public String getProductId() {
         try {
             String currentUrl = driver.getCurrentUrl();
-            String productIdFromUrl = extractProductIdFromUrl(currentUrl);
+            String productIdFromUrl = UrlUtils.extractProductIdFromUrl(currentUrl);
             if (productIdFromUrl.isEmpty()) {
                 throw new RuntimeException("Could not extract product ID from URL: " + currentUrl);
             }
             return productIdFromUrl;
         } catch (Exception e) {
             throw new RuntimeException("Failed to get product ID from current page URL", e);
-        }
-    }
-
-    private String extractProductIdFromUrl(String productUrl) {
-        try {
-            if (productUrl == null) {
-                throw new IllegalArgumentException("Product URL cannot be null");
-            }
-            
-            if (productUrl.contains("/p/")) {
-                String[] parts = productUrl.split("/p/");
-                if (parts.length > 1) {
-                    String afterP = parts[1];
-                    String[] urlParts = afterP.split("/");
-                    if (urlParts.length > 0) {
-                        return urlParts[0];
-                    }
-                }
-            }
-            return "";
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to extract product ID from URL: " + productUrl, e);
         }
     }
 }

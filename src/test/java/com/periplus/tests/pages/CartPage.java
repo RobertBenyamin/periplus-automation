@@ -6,6 +6,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.NoSuchElementException;
+import com.periplus.tests.utils.UrlUtils;
 import java.util.List;
 
 public class CartPage extends BasePage {
@@ -17,33 +18,9 @@ public class CartPage extends BasePage {
         super(driver, wait);
     }
 
-    public String extractProductIdFromUrl(String productUrl) {
-        if (productUrl == null || productUrl.isEmpty()) {
-            throw new IllegalArgumentException("Product URL cannot be null or empty");
-        }
-        
-        try {
-            if (productUrl.contains("/p/")) {
-                String[] parts = productUrl.split("/p/");
-                if (parts.length > 1) {
-                    String afterP = parts[1];
-                    String[] urlParts = afterP.split("/");
-                    if (urlParts.length > 0) {
-                        return urlParts[0];
-                    }
-                }
-            }
-            return "";
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to extract product ID from URL: " + productUrl, e);
-        }
-    }
-
     public boolean isProductInCart(String productId) {
-        if (productId == null || productId.isEmpty()) {
-            throw new IllegalArgumentException("Product ID cannot be null or empty");
-        }
-        
+        validateProductId(productId);
+
         try {
             WebElement productRow = getProductRowByProductId(productId);
             return productRow != null;
@@ -53,9 +30,7 @@ public class CartPage extends BasePage {
     }
 
     public String getProductTitle(String productId) {
-        if (productId == null || productId.isEmpty()) {
-            throw new IllegalArgumentException("Product ID cannot be null or empty");
-        }
+        validateProductId(productId);
         
         try {
             WebElement productRow = getProductRowByProductId(productId);
@@ -75,9 +50,7 @@ public class CartPage extends BasePage {
     }
 
     public String getProductPrice(String productId) {
-        if (productId == null || productId.isEmpty()) {
-            throw new IllegalArgumentException("Product ID cannot be null or empty");
-        }
+        validateProductId(productId);
         
         try {
             WebElement productRow = getProductRowByProductId(productId);
@@ -106,9 +79,7 @@ public class CartPage extends BasePage {
     }
 
     public String getProductQuantity(String productId) {
-        if (productId == null || productId.isEmpty()) {
-            throw new IllegalArgumentException("Product ID cannot be null or empty");
-        }
+        validateProductId(productId);
         
         try {
             WebElement productRow = getProductRowByProductId(productId);
@@ -128,35 +99,32 @@ public class CartPage extends BasePage {
     }
 
     private WebElement getProductRowByProductId(String productId) {
+        validateProductId(productId);
+        
+        List<WebElement> productRows = driver.findElements(cartProductRows);
+        
+        return productRows.stream()
+            .filter(row -> matchesProductId(row, productId))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private boolean matchesProductId(WebElement row, String productId) {
+        try {
+            WebElement productLink = row.findElement(By.xpath(".//p[@class='product-name limit-lines']//a"));
+            String href = productLink.getAttribute("href");
+            return productId.equals(UrlUtils.extractProductIdFromUrl(href));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void validateProductId(String productId) {
         if (productId == null || productId.isEmpty()) {
             throw new IllegalArgumentException("Product ID cannot be null or empty");
         }
-        
-        try {
-            List<WebElement> productRows = driver.findElements(cartProductRows);
-            
-            for (WebElement row : productRows) {
-                // Find the product link within this row
-                List<WebElement> productLinks = row.findElements(
-                    By.xpath(".//p[@class='product-name limit-lines']//a")
-                );
-                
-                if (!productLinks.isEmpty()) {
-                    String href = productLinks.get(0).getAttribute("href");
-                    if (href != null) {
-                        String rowProductId = extractProductIdFromUrl(href);
-                        if (productId.equals(rowProductId)) {
-                            return row;
-                        }
-                    }
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            throw new RuntimeException("Error finding product row for product " + productId, e);
-        }
     }
-    
+
     public String getSubTotal() {
         try {
             WebElement total = wait.until(
