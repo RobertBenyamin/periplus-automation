@@ -4,22 +4,19 @@ import com.periplus.tests.pages.HomePage;
 import com.periplus.tests.pages.LoginPage;
 import com.periplus.tests.pages.ProductDetailPage;
 import com.periplus.tests.pages.SearchResultsPage;
+import com.periplus.tests.config.ConfigManager;
 import com.periplus.tests.pages.CartPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
 
 public class PeriplusCartTest extends BaseTest {
     
     private static final Logger logger = LoggerFactory.getLogger(PeriplusCartTest.class);
     
-    private Properties config;
+    private ConfigManager configManager;
     private String baseUrl;
     private String testEmail;
     private String testPassword;
@@ -27,51 +24,14 @@ public class PeriplusCartTest extends BaseTest {
     
     @BeforeClass
     public void loadConfiguration() {
-        config = new Properties();
-        FileInputStream fileInput = null;
+        configManager = ConfigManager.getInstance();
         
-        try {
-            fileInput = new FileInputStream("src/test/resources/config.properties");
-            config.load(fileInput);
-            
-            baseUrl = config.getProperty("base.url");
-            if (baseUrl == null || baseUrl.isEmpty()) {
-                throw new RuntimeException("base.url property is missing or empty in config.properties");
-            }
-            
-            testEmail = config.getProperty("test.email");
-            if (testEmail == null || testEmail.isEmpty()) {
-                throw new RuntimeException("test.email property is missing or empty in config.properties");
-            }
-            
-            testPassword = config.getProperty("test.password");
-            if (testPassword == null || testPassword.isEmpty()) {
-                throw new RuntimeException("test.password property is missing or empty in config.properties");
-            }
-            
-            searchKeyword = config.getProperty("search.keyword");
-            if (searchKeyword == null || searchKeyword.isEmpty()) {
-                throw new RuntimeException("search.keyword property is missing or empty in config.properties");
-            }
-            
-            logger.info("Configuration loaded successfully");
-        } catch (FileNotFoundException e) {
-            logger.error("Config file not found: {}", e.getMessage());
-            throw new RuntimeException("Failed to find config.properties file", e);
-        } catch (IOException e) {
-            logger.error("Error reading config file: {}", e.getMessage());
-            throw new RuntimeException("Failed to load configuration from config.properties", e);
-        } finally {
-            if (fileInput != null) {
-                try {
-                    fileInput.close();
-                } catch (IOException e) {
-                    logger.warn("Failed to close config file input stream: {}", e.getMessage());
-                }
-            }
-        }
+        baseUrl = configManager.getBaseUrl();
+        testEmail = configManager.getTestEmail();
+        testPassword = configManager.getTestPassword();
+        searchKeyword = configManager.getSearchKeyword();
     }
-    
+
     @Test(priority = 1, description = "Test adding a product to cart with login")
     public void testAddProductToCartWithLogin() {
         logger.info("Starting test: Add Product to Cart");
@@ -115,7 +75,7 @@ public class PeriplusCartTest extends BaseTest {
             String expectedProductTitle = productDetailPage.getProductTitle();
             String expectedProductPrice = productDetailPage.getProductPrice();
             
-            logger.info("ID: {}, Title: {}, Price: {}", 
+            logger.info("Product - ID: {}, Title: {}, Price: {}", 
                    expectedProductId, expectedProductTitle, expectedProductPrice);
             
             // Step 7: Add product to cart
