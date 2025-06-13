@@ -74,9 +74,10 @@ public class PeriplusCartTest extends BaseTest {
             String expectedProductId = productDetailPage.getProductId();
             String expectedProductTitle = productDetailPage.getProductTitle();
             String expectedProductPrice = productDetailPage.getProductPrice();
+            int initialCartCount  = cartPage.getCartItemCount();
             
-            logger.info("Product - ID: {}, Title: {}, Price: {}", 
-                   expectedProductId, expectedProductTitle, expectedProductPrice);
+            logger.info("Product - ID: {}, Title: {}, Price: {}, Initial Cart Count: {}", 
+                   expectedProductId, expectedProductTitle, expectedProductPrice, initialCartCount);
             
             // Step 7: Add product to cart
             logger.info("Step 7: Adding product to cart");
@@ -93,20 +94,23 @@ public class PeriplusCartTest extends BaseTest {
             String actualProductPrice = cartPage.getProductPrice(expectedProductId);
             String actualQuantity = cartPage.getProductQuantity(expectedProductId);
             String actualSubTotal = cartPage.getSubTotal();
+            int updatedCartCount = cartPage.getCartItemCount();
             
-            logger.info("Cart verification - Product found: {}, Title: {}, Price: {}, Quantity: {}, Subtotal: {}", 
+            logger.info("Cart verification - Product found: {}, Title: {}, Price: {}, Quantity: {}, Subtotal: {}, Cart Count: {}", 
                     productInCart, 
                     actualProductTitle,
                     actualProductPrice,
-                    actualQuantity, 
-                    actualSubTotal);
-            
+                    actualQuantity,
+                    actualSubTotal,
+                    updatedCartCount);
+
             // Assertions
             Assert.assertTrue(productInCart, "Product with ID " + expectedProductId + " should be present in cart");
             Assert.assertEquals(actualProductTitle, expectedProductTitle, "Product title mismatch");
             Assert.assertEquals(actualProductPrice, expectedProductPrice, "Product price mismatch");
             Assert.assertEquals(actualQuantity, "1", "Product quantity should be 1");
             Assert.assertEquals(actualSubTotal, expectedProductPrice, "Subtotal should match product price");
+            Assert.assertEquals(updatedCartCount, initialCartCount + 1, "Cart count should increase by 1 after adding product");
         
             logger.info("Test PASSED: Product successfully added to cart with correct details!");
             

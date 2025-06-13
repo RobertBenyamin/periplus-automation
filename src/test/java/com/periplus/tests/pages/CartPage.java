@@ -13,6 +13,7 @@ public class CartPage extends BasePage {
     
     private By cartProductRows = By.xpath("//div[@class='row row-cart-product']");
     private By subTotal = By.id("sub_total");
+    private By cartCounter = By.id("cart_total_mobile");
     
     public CartPage(WebDriver driver, WebDriverWait wait) {
         super(driver, wait);
@@ -135,6 +136,19 @@ public class CartPage extends BasePage {
             throw new RuntimeException("Subtotal element not found on the page", e);
         } catch (Exception e) {
             throw new RuntimeException("Error retrieving subtotal", e);
+        }
+    }
+
+    public int getCartItemCount() {
+        try {
+            WebElement counter = wait.until(
+                ExpectedConditions.presenceOfElementLocated(cartCounter)
+            );
+            return Integer.parseInt(counter.getAttribute("innerHTML").trim());
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Cart item count element not found on the page", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving cart item count", e);
         }
     }
 }
