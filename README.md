@@ -33,22 +33,29 @@ This automation framework tests critical e-commerce functionality on the **Perip
 ```
 periplus-automation/
 ├── src/test/java/com/periplus/tests/
-│   ├── BaseTest.java                 # Base test configuration
-│   ├── PeriplusCartTest.java        # Main test scenarios
-│   └── pages/                       # Page Object Model classes
-│       ├── HomePage.java            # Home page interactions
-│       ├── LoginPage.java           # Login page actions
-│       ├── SearchResultsPage.java   # Search results handling
-│       └── ProductDetailPage.java   # Product detail operations
+│   ├── BaseTest.java                 # Base test configuration & WebDriver setup
+│   ├── PeriplusCartTest.java        # Main test scenarios & assertions
+│   ├── config/
+│   │   └── ConfigManager.java       # Centralized configuration management
+│   ├── pages/                       # Page Object Model classes
+│   │   ├── BasePage.java           # Base page with common functionality
+│   │   ├── HomePage.java           # Home page interactions & navigation
+│   │   ├── LoginPage.java          # Login page actions & authentication
+│   │   ├── SearchResultsPage.java  # Search results handling & product selection
+│   │   ├── ProductDetailPage.java  # Product details & add to cart operations
+│   │   └── CartPage.java           # Shopping cart verification & management
+│   └── utils/
+│       └── UrlUtils.java           # URL parsing utilities (product ID extraction)
 ├── src/test/resources/
-│   ├── config.properties            # Test configuration (⚠️ Contains credentials)
-│   └── testng.xml                   # TestNG suite configuration
-├── target/                          # Build artifacts
-│   ├── test-classes/               # Compiled test classes
-│   └── surefire-reports/           # Test execution reports
-├── .gitignore                       # Excludes config.properties for security
-├── pom.xml                          # Maven dependencies
-└── README.md                        # Project documentation
+│   ├── config.properties           # Test configuration (⚠️ Contains credentials)
+│   ├── config.properties.example   # Example configuration template
+│   └── testng.xml                  # TestNG suite configuration
+├── target/                         # Build artifacts & reports
+│   ├── test-classes/              # Compiled test classes
+│   └── surefire-reports/          # Test execution reports
+├── .gitignore                      # Git exclusions (includes config.properties)
+├── pom.xml                         # Maven dependencies & build configuration
+└── README.md                       # Project documentation
 ```
 
 > **🔒 Security Note**: `config.properties` is excluded from version control via `.gitignore` to protect test credentials.
@@ -118,12 +125,24 @@ mvn test -Dtest=PeriplusCartTest
 ```java
 @Test(description = "Test adding a product to cart with login")
 public void testAddProductToCartWithLogin() {
-    // 1. Navigate to Periplus website
-    // 2. Login with test credentials
-    // 3. Search for products (e.g., "Naruto")
-    // 4. Select first product from results
-    // 5. Add product to cart from detail page
-    // 6. Verify cart count increased
+    // 1. 🌐 Navigate to Periplus website
+    // 2. 🔐 Navigate to login page and authenticate with test credentials
+    // 3. 🔍 Search for products using configured keyword (e.g., "Naruto")
+    // 4. 📋 Wait for search results and click on first product
+    // 5. 📄 Navigate to product detail page and extract product information:
+    //    - Product ID (from URL)
+    //    - Product title
+    //    - Product price
+    //    - Initial cart count
+    // 6. 🛒 Add product to cart
+    // 7. 🛍️ Navigate to cart page and verify cart contents
+    // 8. ✅ Perform comprehensive assertions:
+    //    - Product exists in cart
+    //    - Product title matches expected
+    //    - Product price matches expected
+    //    - Product quantity is 1
+    //    - Subtotal matches product price
+    //    - Cart count increased by 1
 }
 ```
 
